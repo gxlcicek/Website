@@ -166,22 +166,64 @@
                 padding: 10px;
             }
         }
-    </style>
-    <script>
-        function showContact() {
-            var contactSection = document.getElementById('contact');
-            contactSection.style.display = 'block';
-            contactSection.style.opacity = 0;
-            var opacity = 0;
-            var intervalID = setInterval(function() {
-                if (opacity >= 1) {
-                    clearInterval(intervalID);
-                }
-                contactSection.style.opacity = opacity;
-                opacity += 0.1;
-            }, 50);
+        .comments-section {
+            margin: 20px 0;
         }
-    </script>
+        .comments-list {
+            margin: 20px 0;
+            padding: 0;
+            list-style: none;
+        }
+        .comments-list .comment {
+            position: relative;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .comments-list .comment .comment-name {
+            font-weight: bold;
+        }
+        .comments-list .comment .comment-text {
+            margin: 5px 0;
+        }
+        .like-dislike {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+        .like-dislike button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .like-dislike button:hover {
+            color: #007BFF;
+        }
+        #comment-form {
+            display: flex;
+            flex-direction: column;
+        }
+        #comment-form label {
+            margin: 5px 0;
+        }
+        #comment-form input, #comment-form textarea {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #comment-form button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        #comment-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -212,7 +254,7 @@
         <div class="gallery">
             <div class="gallery-item">
                 <img src="WiingHaus.jpg" alt="Mein Studium Aktuell">
-                <a href="https://vm.tiktok.com/ZGegS7p2D/" target="_blank">Zum Video</a>
+                <a href="https://www.tiktok.com/@gxlcicek/video/7355214814332882208?is_from_webapp=1&sender_device=pc&web_id=7384785676745967136" target="_blank">Zum Video</a>
             </div>
             <div class="gallery-item">
                 <img src="BA.jpg" alt="Tipps für eure Bachelorarbeit">
@@ -243,9 +285,123 @@
             <a href="https://www.tiktok.com/@gxlcicek" target="_blank">TikTok</a>
             <a href="https://www.instagram.com/dein_account" target="_blank">Instagram</a>
         </div>
+        <div class="comments-section">
+            <h2>Kommentare</h2>
+            <div class="comments-list" id="comments-list">
+                <!-- Hier werden die Kommentare angezeigt -->
+            </div>
+            <form id="comment-form">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                <label for="comment">Kommentar:</label>
+                <textarea id="comment" name="comment" rows="4" required></textarea>
+                <button type="submit">Kommentar absenden</button>
+            </form>
+        </div>
     </div>
     <footer>
         <p>&copy; 2024 Gülsüm (eure Lieblingshijabi). Alle Rechte vorbehalten.</p>
     </footer>
+    <script>
+        function showContact() {
+            var contactSection = document.getElementById('contact');
+            contactSection.style.display = 'block';
+            contactSection.style.opacity = 0;
+            var opacity = 0;
+            var intervalID = setInterval(function() {
+                if (opacity >= 1) {
+                    clearInterval(intervalID);
+                }
+                contactSection.style.opacity = opacity;
+                opacity += 0.1;
+            }, 50);
+        }
+
+        function containsInappropriateWords(text) {
+            const inappropriateWords = ["badword1", "badword2", "badword3"]; // Fügen Sie hier unangemessene Wörter hinzu
+            for (let word of inappropriateWords) {
+                if (text.toLowerCase().includes(word.toLowerCase())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function loadComments() {
+            const comments = JSON.parse(localStorage.getItem('comments')) || [];
+            const commentsList = document.getElementById('comments-list');
+            commentsList.innerHTML = '';
+            comments.forEach(comment => {
+                const commentHTML = '<div class="comment">' +
+                                    '<p class="comment-name">' + comment.name + '</p>' +
+                                    '<p class="comment-text">' + comment.text + '</p>' +
+                                    '<div class="like-dislike">' +
+                                    '<button class="like-btn">👍 <span class="like-count">' + comment.likes + '</span></button>' +
+                                    '<button class="dislike-btn">👎 <span class="dislike-count">' + comment.dislikes + '</span></button>' +
+                                    '</div>' +
+                                    '</div>';
+                commentsList.insertAdjacentHTML('beforeend', commentHTML);
+
+                // Event-Listener für Like/Dislike-Buttons hinzufügen
+                const newComment = commentsList.lastElementChild;
+                const likeBtn = newComment.querySelector('.like-btn');
+                const dislikeBtn = newComment.querySelector('.dislike-btn');
+
+                likeBtn.addEventListener('click', function() {
+                    const likeCount = this.querySelector('.like-count');
+                    likeCount.textContent = parseInt(likeCount.textContent) + 1;
+                    comment.likes = likeCount.textContent;
+                    saveComments(comments);
+                });
+
+                dislikeBtn.addEventListener('click', function() {
+                    const dislikeCount = this.querySelector('.dislike-count');
+                    dislikeCount.textContent = parseInt(dislikeCount.textContent) + 1;
+                    comment.dislikes = dislikeCount.textContent;
+                    saveComments(comments);
+                });
+            });
+        }
+
+        function saveComments(comments) {
+            localStorage.setItem('comments', JSON.stringify(comments));
+        }
+
+        document.getElementById('comment-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Name und Kommentar aus dem Formular holen
+            var name = document.getElementById('name').value;
+            var commentText = document.getElementById('comment').value;
+
+            // Kommentar auf unangemessene Wörter überprüfen
+            if (containsInappropriateWords(commentText)) {
+                alert("Ihr Kommentar enthält unangemessene Wörter und wurde nicht veröffentlicht.");
+                return;
+            }
+
+            // Kommentar-Objekt erstellen
+            const comment = {
+                name: name,
+                text: commentText,
+                likes: 0,
+                dislikes: 0
+            };
+
+            // Kommentar zur Liste und Local Storage hinzufügen
+            const comments = JSON.parse(localStorage.getItem('comments')) || [];
+            comments.push(comment);
+            saveComments(comments);
+
+            // Kommentare laden und anzeigen
+            loadComments();
+
+            // Formular zurücksetzen
+            document.getElementById('comment-form').reset();
+        });
+
+        // Kommentare laden, wenn die Seite geladen wird
+        document.addEventListener('DOMContentLoaded', loadComments);
+    </script>
 </body>
 </html>
